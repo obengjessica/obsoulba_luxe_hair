@@ -245,7 +245,7 @@ function Hero({ slides, services, onBook }) {
 
 function Services({ services, onBook }) {
   return (
-    <section className="services-section" id="services">
+    <section className="services-section" id="services" data-reveal>
       <div className="section-wrap">
         <div className="section-heading">
           <div><div className="eyebrow"><span className="eyebrow-rule" /> YOUR MOMENT, YOUR STYLE</div><h2>Services to <em>love.</em></h2></div>
@@ -280,7 +280,7 @@ function Services({ services, onBook }) {
 
 function Products({ products }) {
   return (
-    <section className="wigs-section" id="wigs">
+    <section className="wigs-section" id="wigs" data-reveal>
       <div className="section-wrap">
         <div className="section-heading">
           <div><div className="eyebrow"><span className="eyebrow-rule" /> THE LUXE HAIR EDIT</div><h2>Meet your new <em>favourite.</em></h2></div>
@@ -466,7 +466,7 @@ function BookingModal({ open, services, initialService, onClose }) {
 function StoryAndGallery() {
   return (
     <>
-      <section className="story-section" id="about">
+      <section className="story-section" id="about" data-reveal>
         <div className="story-image"><img src="/assets/portrait.jpg" alt="A client wearing voluminous, glossy waves" loading="lazy" /><span className="image-note">THE OBSOULBA FEELING · EST. WITH LOVE</span></div>
         <div className="story-copy">
           <div className="eyebrow"><span className="eyebrow-rule" /> A NOTE FROM US</div>
@@ -476,12 +476,12 @@ function StoryAndGallery() {
           <div className="story-signature">With love, <span>Obsoulba</span></div>
         </div>
       </section>
-      <section className="gallery-section section-wrap" id="gallery">
+      <section className="gallery-section section-wrap" id="gallery" data-reveal>
         <div className="section-heading">
           <div><div className="eyebrow"><span className="eyebrow-rule" /> THE DETAILS DO IT</div><h2>Little moments, <em>loved.</em></h2></div>
           <a className="text-link" href={WHATSAPP} target="_blank" rel="noreferrer">Ask us about a look <span aria-hidden="true">↗</span></a>
         </div>
-        <div className="gallery-grid">
+        <div className="gallery-grid" data-reveal>
           <figure className="gallery-item gallery-large"><img src="/assets/wig-deep-wave.jpg" alt="Soft, dark deep-wave wig styling" loading="lazy" /><figcaption>THE SOFT-GLAM MOMENT</figcaption></figure>
           <figure className="gallery-item"><img src="/assets/nails.jpg" alt="Pink nail art with delicate details" loading="lazy" /><figcaption>FINISHING TOUCHES</figcaption></figure>
           <figure className="gallery-item"><img src="/assets/lashes.jpg" alt="A close-up of professionally styled lashes" loading="lazy" /><figcaption>MADE TO FEEL LIKE YOU</figcaption></figure>
@@ -501,7 +501,7 @@ function StoryAndGallery() {
 function Footer({ onBook }) {
   return (
     <>
-      <section className="booking-callout" id="contact">
+      <section className="booking-callout" id="contact" data-reveal>
         <div className="eyebrow"><span className="eyebrow-rule" /> YOUR NEXT FAVOURITE LOOK STARTS HERE</div>
         <h2>A little time for <em>you?</em></h2>
         <p>Tell us what you're dreaming of. We'll take it from there.</p>
@@ -517,7 +517,7 @@ function Footer({ onBook }) {
           </div>
         </div>
       </section>
-      <footer className="site-footer">
+      <footer className="site-footer" data-reveal>
         <div className="footer-main section-wrap">
           <div className="footer-brand"><Brand footer /><p>Beauty, made personal.<br />Accra, Ghana.</p></div>
           <div className="footer-column"><span>COME ON IN</span><a href="#services">Our services</a><a href="#wigs">Shop wigs</a><a href="#about">Our story</a></div>
@@ -555,6 +555,26 @@ function Home({ content, onBook }) {
     return () => window.removeEventListener("hashchange", onHashChange);
   }, [openBooking]);
 
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return undefined;
+    const sections = document.querySelectorAll("[data-reveal]");
+    if (!("IntersectionObserver" in window)) {
+      sections.forEach((section) => section.classList.add("is-visible"));
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver((entries, activeObserver) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.classList.add("is-visible");
+        activeObserver.unobserve(entry.target);
+      });
+    }, { threshold: 0.12, rootMargin: "0px 0px -6% 0px" });
+
+    sections.forEach((section) => observer.observe(section));
+    return () => observer.disconnect();
+  }, [content.loading, content.error]);
+
   if (content.loading) return <div className="site-loading"><Brand /><p>Opening the Obsoulba experience…</p></div>;
   if (content.error) return <div className="site-loading">
     <Brand />
@@ -567,7 +587,7 @@ function Home({ content, onBook }) {
       <Header onBook={openBooking} />
       <main id="home">
         <Hero slides={content.slides} services={content.services} onBook={openBooking} />
-        <section className="intro section-wrap">
+        <section className="intro section-wrap" data-reveal>
           <div className="eyebrow"><span className="eyebrow-rule" /> A LITTLE LUXURY, JUST FOR YOU</div>
           <div className="intro-layout">
             <h1>Beauty that feels<br /><em>like you.</em></h1>
