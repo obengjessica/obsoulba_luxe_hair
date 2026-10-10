@@ -312,7 +312,8 @@ function BookingModal({ open, services, initialService, onClose }) {
   const [saving, setSaving] = useState(false);
   const [serviceId, setServiceId] = useState("");
   const [whatsAppUrl, setWhatsAppUrl] = useState("");
-  const [notificationWarning, setNotificationWarning] = useState("");
+  const [emailUrl, setEmailUrl] = useState("");
+  const [emailAppUrl, setEmailAppUrl] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -320,7 +321,8 @@ function BookingModal({ open, services, initialService, onClose }) {
     setFeedback("");
     setSuccess(false);
     setWhatsAppUrl("");
-    setNotificationWarning("");
+    setEmailUrl("");
+    setEmailAppUrl("");
     document.body.classList.add("no-scroll");
     const onKeyDown = (event) => { if (event.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKeyDown);
@@ -356,29 +358,28 @@ function BookingModal({ open, services, initialService, onClose }) {
       booking.notes && `Notes: ${booking.notes}`,
     ].filter(Boolean).join("\n");
     setWhatsAppUrl(`${WHATSAPP}?text=${encodeURIComponent(message)}`);
+    const emailSubject = `Appointment request - ${booking.name}`;
+    const emailBody = [
+      "Hello Obsoulba Luxe Hair,",
+      "",
+      "I would like to request an appointment with the following details:",
+      `Name: ${booking.name}`,
+      `Phone: ${booking.phone}`,
+      `Service: ${serviceName}`,
+      `Preferred date: ${booking.appointment_date}`,
+      `Preferred time: ${booking.preferred_time}`,
+      `Notes: ${booking.notes || "None"}`,
+      "",
+      "Please let me know if this time is available.",
+      "",
+      "Thank you.",
+    ].join("\n");
+    setEmailUrl(`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(CONTACT_EMAIL)}&su=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`);
+    setEmailAppUrl(`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`);
     let bookingError;
     if (supabase) {
-      try {
-        const bookingId = crypto.randomUUID();
-        const { error } = await supabase
-          .from("bookings")
-          .insert({ ...booking, id: bookingId });
-        bookingError = error;
-        if (!error) {
-          try {
-            const { error: notificationError } = await supabase.functions.invoke("notify-booking", {
-              body: { bookingId },
-            });
-            if (notificationError) {
-              setNotificationWarning(`Your request is saved, but the email notification failed: ${queryError(notificationError)} Please use WhatsApp below.`);
-            }
-          } catch (notificationError) {
-            setNotificationWarning(`Your request is saved, but the email notification failed: ${queryError(notificationError)} Please use WhatsApp below.`);
-          }
-        }
-      } catch (error) {
-        bookingError = error;
-      }
+      const { error } = await supabase.from("bookings").insert(booking);
+      bookingError = error;
     } else {
       try {
         const response = await fetch("/api/bookings", {
@@ -437,7 +438,16 @@ function BookingModal({ open, services, initialService, onClose }) {
             <textarea name="notes" rows="3" maxLength="500" placeholder="Share a style or detail you're thinking about…" />
           </label>
           <p className={`form-feedback${success ? " success" : ""}`} role="status">{feedback}</p>
-          {notificationWarning && <p className="form-feedback" role="status">{notificationWarning}</p>}
+          {success && emailUrl && (
+            <>
+              <a className="button button-dark button-wide booking-email" href={emailUrl} target="_blank" rel="noreferrer">
+                Send booking by email <span aria-hidden="true">↗</span>
+              </a>
+              <a className="booking-email-app" href={emailAppUrl}>
+                Open in another email app
+              </a>
+            </>
+          )}
           {success && whatsAppUrl && (
             <a className="button button-dark button-wide booking-whatsapp" href={whatsAppUrl} target="_blank" rel="noreferrer">
               Send booking on WhatsApp <span aria-hidden="true">↗</span>
