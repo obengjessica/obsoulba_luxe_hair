@@ -125,7 +125,6 @@ function Header({ onBook }) {
   return (
     <>
       <div className="announcement">
-        <span className="announcement-mark" aria-hidden="true">✳</span>
         <span>BEAUTY, MADE PERSONAL</span>
         <span className="announcement-separator" aria-hidden="true">·</span>
         <span>ACCRA, GHANA</span>
@@ -453,7 +452,6 @@ function Footer({ onBook }) {
   return (
     <>
       <section className="booking-callout" id="contact">
-        <div className="callout-flower" aria-hidden="true">✳</div>
         <div className="eyebrow"><span className="eyebrow-rule" /> YOUR NEXT FAVOURITE LOOK STARTS HERE</div>
         <h2>A little time for <em>you?</em></h2>
         <p>Tell us what you're dreaming of. We'll take it from there.</p>
