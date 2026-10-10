@@ -29,7 +29,7 @@ Add those two values to a local `.env.local` file. Vite uses the `VITE_` prefix;
 cp .env.example .env.local
 ```
 
-In the Supabase SQL Editor, run [`supabase/migrations/001_initial_schema.sql`](./supabase/migrations/001_initial_schema.sql). This creates the catalog, hero slide, booking and admin-profile tables, row-level security rules, the public catalog image bucket and initial service/product/slide content.
+In the Supabase SQL Editor, run [`supabase/migrations/001_initial_schema.sql`](./supabase/migrations/001_initial_schema.sql). This creates the catalog, hero slide, booking and admin-profile tables, row-level security rules, the public catalog image bucket and initial service/product/slide content. If this project was already set up, also run [`supabase/migrations/002_allow_public_booking_ids.sql`](./supabase/migrations/002_allow_public_booking_ids.sql) so the public booking form can attach a request ID for its notification.
 
 Create the owner account in **Authentication → Users → Add user** and confirm it. Copy that user's UUID, then grant admin access in the SQL Editor:
 
@@ -57,6 +57,26 @@ Open the local URL printed by Vite. Use **Admin** in the footer to open the stud
 - Removed catalog items are hidden rather than physically deleted, preserving historical booking references.
 
 The admin role is granted explicitly through `public.profiles`; signing up or creating another Auth user does not make that user an admin. Supabase row-level security protects admin edits, storage uploads/deletes, and booking visibility. Visitors may submit appointment requests but cannot read them.
+
+## Booking notifications
+
+Bookings are saved in Supabase. To email the salon when a new request arrives:
+
+1. Create a Resend account and verify a sending domain/address. The sender configured in `FROM_EMAIL` must be allowed by Resend.
+2. Install and sign in to the Supabase CLI, then link it to this project.
+3. Set the notification secrets in Supabase (never in Vercel or a `VITE_` variable):
+
+   ```sh
+   supabase secrets set RESEND_API_KEY=re_... FROM_EMAIL="Obsoulba Luxe Hair <bookings@your-verified-domain.com>" NOTIFICATION_EMAIL=Otengchristiana4837@gmail.com
+   ```
+
+4. Deploy the email function:
+
+   ```sh
+   supabase functions deploy notify-booking
+   ```
+
+After a successful booking, the customer also sees a WhatsApp button with the appointment details prefilled to the salon's number. They must tap **Send** in WhatsApp. Automatic WhatsApp delivery requires the Meta WhatsApp Business API and is not enabled by this link.
 
 ## Deploy
 
